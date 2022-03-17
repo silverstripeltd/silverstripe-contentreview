@@ -165,7 +165,10 @@ class ContentReviewDefaultSettings extends DataExtension
                 TextField::create('ReviewFrom', _t(__CLASS__ . '.EMAILFROM', 'From email address'))
                     ->setDescription(_t(__CLASS__ . '.EMAILFROM_RIGHTTITLE', 'e.g: do-not-reply@site.com')),
                 TextField::create('ReviewSubject', _t(__CLASS__ . '.EMAILSUBJECT', 'Subject line')),
-                $wysiwygConfig = HTMLEditorField::create('ReviewBody', _t(__CLASS__ . '.EMAILTEMPLATE', 'Email template')),
+                $wysiwygConfig = HTMLEditorField::create(
+                    'ReviewBody',
+                    _t(__CLASS__ . '.EMAILTEMPLATE', 'Email template')
+                ),
                 LiteralField::create(
                     'TemplateHelp',
                     $this->owner->renderWith('SilverStripe\\ContentReview\\ContentReviewAdminHelp')
@@ -179,10 +182,9 @@ class ContentReviewDefaultSettings extends DataExtension
      * Get the TinyMCEConfig that should be used for the email template preview
      *
      * @return TinyMCEConfig
-     */   
+     */
     public static function getTinyMCEConfig(
-    TinyMCEConfig $config
-
+        TinyMCEConfig $config
     ): TinyMCEConfig {
         $editorButtonsGroupSeparator = '|';
         $allowedEditorButtons = [
