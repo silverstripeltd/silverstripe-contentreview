@@ -24,7 +24,7 @@ en:
     DISABLE: 'Disable content review'
     INHERIT: 'Inherit from parent page'
     NEXTREVIEWDATADESCRIPTION: 'Leave blank for no review'
-    NEXTREVIEWDATE: 'Next review date'
+    NEXTREVIEWDATE: 'Overdue review date'
     OPTIONS: Options
     OWNERGROUPSDESCRIPTION: 'Page owners that are responsible for reviews'
     OWNERUSERSDESCRIPTION: 'Page owners that are responsible for reviews'
