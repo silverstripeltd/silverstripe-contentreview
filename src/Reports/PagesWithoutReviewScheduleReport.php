@@ -55,7 +55,7 @@ class PagesWithoutReviewScheduleReport extends Report
                 "formatting" => "<a href='{$linkPath}/\$ID?{$linkQuery}' title='Edit page'>\$value</a>",
             ],
             "NextReviewDate"    => [
-                "title"   => "Review Date",
+                "title"   => "Overdue Review Date",
                 "casting" => "Date->Full",
             ],
             "OwnerNames"        => [

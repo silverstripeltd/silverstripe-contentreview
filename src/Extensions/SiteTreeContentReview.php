@@ -340,7 +340,7 @@ class SiteTreeContentReview extends DataExtension implements PermissionProvider
             );
             $nextReviewAt = DateField::create(
                 'RONextReviewDate',
-                _t(__CLASS__ . ".NEXTREVIEWDATE", "Next review date"),
+                _t(__CLASS__ . ".NEXTREVIEWDATE", "Overdue review date"),
                 $this->owner->NextReviewDate
             );
 
@@ -420,7 +420,7 @@ class SiteTreeContentReview extends DataExtension implements PermissionProvider
             ->setAttribute("data-placeholder", _t(__CLASS__ . ".ADDGROUP", "Add groups"))
             ->setDescription(_t(__CLASS__ . ".OWNERGROUPSDESCRIPTION", "Page owners that are responsible for reviews"));
 
-        $reviewDate = DateField::create("NextReviewDate", _t(__CLASS__ . ".NEXTREVIEWDATE", "Next review date"))
+        $reviewDate = DateField::create("NextReviewDate", _t(__CLASS__ . ".NEXTREVIEWDATE", "Overdue review date"))
             ->setDescription(_t(__CLASS__ . ".NEXTREVIEWDATADESCRIPTION", "Leave blank for no review"));
 
         $reviewFrequency = DropdownField::create(
@@ -581,7 +581,7 @@ class SiteTreeContentReview extends DataExtension implements PermissionProvider
             }
         }
 
-        // Ensure that a inherited page always have a next review date
+        // Ensure that an inherited page always has an overdue review date
         if ($this->owner->ContentReviewType == "Inherit" && !$this->owner->NextReviewDate) {
             $this->setDefaultReviewDateForInherited();
         }
