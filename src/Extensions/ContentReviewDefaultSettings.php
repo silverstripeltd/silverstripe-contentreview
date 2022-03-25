@@ -44,6 +44,9 @@ class ContentReviewDefaultSettings extends DataExtension
         'ReviewSubject' => 'Page(s) are due for content review',
         'ReviewBody' => '<h2>Page(s) due for review</h2>'
             . '<p>There are $PagesCount pages that are due for review today by you.</p>',
+        'ReminderSubject' => 'Reminder: Page(s) are upcoming for content review',
+        'ReminderBody' => '<h2>Reminder: Your Page(s) are approaching overdue for review on $OverdueReviewDate </h2>'
+            . '<p>There are $PagesCount pages that require review by you.</p>',
     );
 
     /**
@@ -66,6 +69,19 @@ class ContentReviewDefaultSettings extends DataExtension
      * @var string
      */
     private static $content_review_template = 'SilverStripe\\ContentReview\\ContentReviewEmail';
+
+    /**
+     * Template to use for Reminder content review emails.
+     *
+     * This should contain an $EmailBody variable as a placeholder for the user-defined copy
+     *
+     * @config
+     *
+     * @var string
+     */
+    private static $content_reminder_review_template = 'SilverStripe\\ContentReview\\ContentReminderReviewEmail';
+
+
 
     /**
      * @return string
@@ -163,8 +179,13 @@ class ContentReviewDefaultSettings extends DataExtension
             [
                 TextField::create('ReviewFrom', _t(__CLASS__ . '.EMAILFROM', 'From email address'))
                     ->setDescription(_t(__CLASS__ . '.EMAILFROM_RIGHTTITLE', 'e.g: do-not-reply@site.com')),
-                TextField::create('ReviewSubject', _t(__CLASS__ . '.EMAILSUBJECT', 'Subject line')),
-                TextAreaField::create('ReviewBody', _t(__CLASS__ . '.EMAILTEMPLATE', 'Email template')),
+                TextField::create('ReviewSubject', _t(__CLASS__ . '.EMAILSUBJECT', 'Overdue review subject line')),
+                TextAreaField::create('ReviewBody', _t(__CLASS__ . '.OVERDUEEMAILTEMPLATE', 'Overdue review email template')),
+                TextField::create('ReminderSubject', _t(__CLASS__ . '.EMAILSUBJECT', 'Reminder review subject line')),
+                $wysiwygConfig = HTMLEditorField::create(
+                     'ReminderBody',
+                     _t(__CLASS__ . '.REMINDEREMAILTEMPLATE', 'Reminder Email template')
+                 ),
                 LiteralField::create(
                     'TemplateHelp',
                     $this->owner->renderWith('SilverStripe\\ContentReview\\ContentReviewAdminHelp')
