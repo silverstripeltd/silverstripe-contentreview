@@ -106,11 +106,33 @@ class SiteTreeContentReview extends DataExtension implements PermissionProvider
     ];
 
     /**
+     * Array of interval timings used to remind content authors to do
+     * a review of their content before the overdue review date.
+     *
+     * @config
+     *
+     * @var string[]
+     */
+    private static $reminder_intervals = [
+        7 => '7 days',
+        30 => '30 days',
+        60 => '60 days',
+    ];
+
+    /**
      * @return array
      */
     public static function get_schedule()
     {
         return Config::inst()->get(static::class, 'schedule');
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function get_reminder_intervals()
+    {
+        return Config::inst()->get(static::class, 'reminder_intervals');
     }
 
     /**
