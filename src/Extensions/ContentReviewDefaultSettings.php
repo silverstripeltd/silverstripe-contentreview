@@ -10,6 +10,7 @@ use SilverStripe\Forms\ListboxField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\TextareaField;
 use SilverStripe\Forms\TextField;
+use SilverStripe\Forms\TextAreaField;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
@@ -33,6 +34,8 @@ class ContentReviewDefaultSettings extends DataExtension
         'ReviewFrom' => 'Varchar(255)',
         'ReviewSubject' => 'Varchar(255)',
         'ReviewBody' => 'HTMLText',
+        'ReminderSubject' => 'Varchar(255)',
+        'ReminderBody' => 'HTMLText',
     );
 
     /**
@@ -45,8 +48,8 @@ class ContentReviewDefaultSettings extends DataExtension
         'ReviewBody' => '<h2>Page(s) due for review</h2>'
             . '<p>There are $PagesCount pages that are due for review today by you.</p>',
         'ReminderSubject' => 'Reminder: Page(s) are upcoming for content review',
-        'ReminderBody' => '<h2>Reminder: Your Page(s) are approaching overdue for review on $OverdueReviewDate </h2>'
-            . '<p>There are $PagesCount pages that require review by you.</p>',
+        'ReminderBody' => '<h2>Reminder: Your Page(s) are approaching overdue for review</h2>'
+            . '<p>There are $PagesCount pages that have reviews upcoming for you.</p>',
     );
 
     /**
@@ -177,9 +180,18 @@ class ContentReviewDefaultSettings extends DataExtension
             [
                 TextField::create('ReviewFrom', _t(__CLASS__ . '.EMAILFROM', 'From email address'))
                     ->setDescription(_t(__CLASS__ . '.EMAILFROM_RIGHTTITLE', 'e.g: do-not-reply@site.com')),
-                TextField::create('ReviewSubject', _t(__CLASS__ . '.EMAILSUBJECT', 'Overdue review subject line')),
-                TextAreaField::create('ReviewBody', _t(__CLASS__ . '.OVERDUEEMAILTEMPLATE', 'Overdue review email template')),
-                TextField::create('ReminderSubject', _t(__CLASS__ . '.EMAILSUBJECT', 'Reminder review subject line')),
+                TextField::create(
+                    'ReviewSubject',
+                    _t(__CLASS__ . '.OVERDUEEMAILSUBJECT', 'Overdue review subject line')
+                ),
+                TextAreaField::create(
+                    'ReviewBody',
+                    _t(__CLASS__ . '.OVERDUEEMAILTEMPLATE', 'Overdue review email template')
+                ),
+                TextField::create(
+                    'ReminderSubject',
+                    _t(__CLASS__ . '.REMINDEREMAILSUBJECT', 'Reminder review subject line')
+                ),
                 $wysiwygConfig = HTMLEditorField::create(
                      'ReminderBody',
                      _t(__CLASS__ . '.REMINDEREMAILTEMPLATE', 'Reminder Email template')

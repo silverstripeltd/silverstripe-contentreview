@@ -2,8 +2,7 @@
 
 namespace SilverStripe\ContentReview\Jobs;
 
-use SilverStripe\ContentReview\Tasks\ContentReminderReviewEmails;
-use SilverStripe\ContentReview\Tasks\ContentReviewEmails;
+use SilverStripe\ContentReview\Tasks\ContentReviewReminderEmails;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Config\Config;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
@@ -94,7 +93,7 @@ class ContentReviewReminderNotificationJob extends AbstractQueuedJob implements 
     {
         $this->queueNextRun();
 
-        $task = new ContentReminderReviewEmails();
+        $task = new ContentReviewReminderEmails();
         $task->run(new HTTPRequest("GET", "/dev/tasks/ContentReminderReviewEmails"));
 
         $this->currentStep = 1;
