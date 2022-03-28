@@ -105,7 +105,7 @@ class ContentReminderReviewEmails extends BuildTask
         $body = $this->getEmailBody($siteConfig, $templateVariables);
 
         // Populate mail body with fixed template
-        $email->setHTMLTemplate($siteConfig->config()->get('content_review_template'));
+        $email->setHTMLTemplate($siteConfig->config()->get('content_review_reminder_template'));
         $email->setData(
             array_merge(
                 $templateVariables,

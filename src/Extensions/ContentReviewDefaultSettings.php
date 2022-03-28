@@ -79,9 +79,7 @@ class ContentReviewDefaultSettings extends DataExtension
      *
      * @var string
      */
-    private static $content_reminder_review_template = 'SilverStripe\\ContentReview\\ContentReminderReviewEmail';
-
-
+    private static $content_review_reminder_template = 'SilverStripe\\ContentReview\\ContentReviewReminderEmail';
 
     /**
      * @return string
