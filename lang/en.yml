@@ -7,8 +7,10 @@ en:
     DEFAULTSETTINGSHELP: 'These settings will apply to all pages that do not have a specific Content Review schedule.'
     EMAILFROM: 'From email address'
     EMAILFROM_RIGHTTITLE: 'e.g: do-not-reply@site.com'
-    EMAILSUBJECT: 'Subject line'
-    EMAILTEMPLATE: 'Email template'
+    OVERDUEEMAILSUBJECT: 'Overdue subject line'
+    OVERDUEEMAILTEMPLATE: 'Overdue review email template'
+    REMINDEREMAILSUBJECT: 'Reminder subject line'
+    REMINDEREMAILTEMPLATE: 'Reminder email template'
     OWNERGROUPSDESCRIPTION: 'Page owners that are responsible for reviews'
     OWNERUSERSDESCRIPTION: 'Page owners that are responsible for reviews'
     PAGEOWNERGROUPS: Groups

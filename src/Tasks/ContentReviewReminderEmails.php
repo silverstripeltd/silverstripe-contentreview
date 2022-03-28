@@ -5,7 +5,6 @@ namespace SilverStripe\ContentReview\Tasks;
 use Page;
 use Psr\Log\LoggerInterface;
 use SilverStripe\ContentReview\Compatibility\ContentReviewCompatability;
-use SilverStripe\ContentReview\Extensions\ContentReviewDefaultSettings;
 use SilverStripe\ContentReview\Extensions\SiteTreeContentReview;
 use SilverStripe\Control\Email\Email;
 use SilverStripe\Control\HTTPRequest;
@@ -19,13 +18,12 @@ use SilverStripe\Security\Member;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\View\ArrayData;
 use SilverStripe\View\SSViewer;
-use SilverStripe\ContentReview\Models\ContentReviewLog;
 
 /**
  * Daily task that compares the Next review date of content pages and sends an email to the owners to remind them
  * that the content is nearing overdue for their review.
  */
-class ContentReminderReviewEmails extends BuildTask
+class ContentReviewReminderEmails extends BuildTask
 {
     /**
      * @param HTTPRequest $request
