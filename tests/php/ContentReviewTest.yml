@@ -3,6 +3,8 @@ SilverStripe\SiteConfig\SiteConfig:
     ReviewFrom: sender@silverstripe.com
     ReviewSubject: 'Please log in to review some content!'
     ReviewBody: '<h1>$Subject</h1><p>There are $PagesCount pages that are due for review today by you, $ToFirstName.</p><p>This email was sent to $ToEmail</p>'
+    ReminderSubject: 'You have upcoming reviews!'
+    ReminderBody: '<h1>Reminder: Your Page(s) are approaching overdue for review</h1><p>There are $PagesCount pages that have reviews upcoming for you.</p>'
 
 SilverStripe\Security\Permission:
   cmsmain1:
