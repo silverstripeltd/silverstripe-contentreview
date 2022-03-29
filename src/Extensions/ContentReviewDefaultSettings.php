@@ -6,9 +6,10 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Control\Email\Email;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
+use SilverStripe\Forms\HTMLEditor\TinyMCEConfig;
 use SilverStripe\Forms\ListboxField;
 use SilverStripe\Forms\LiteralField;
-use SilverStripe\Forms\TextareaField;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\TextAreaField;
 use SilverStripe\ORM\DataExtension;
@@ -180,6 +181,10 @@ class ContentReviewDefaultSettings extends DataExtension
             [
                 TextField::create('ReviewFrom', _t(__CLASS__ . '.EMAILFROM', 'From email address'))
                     ->setDescription(_t(__CLASS__ . '.EMAILFROM_RIGHTTITLE', 'e.g: do-not-reply@site.com')),
+                $wysiwygConfig = HTMLEditorField::create(
+                    'ReviewBody',
+                    _t(__CLASS__ . '.EMAILTEMPLATE', 'Email template')
+                ),
                 TextField::create(
                     'ReviewSubject',
                     _t(__CLASS__ . '.OVERDUEEMAILSUBJECT', 'Overdue review subject line')
@@ -202,6 +207,41 @@ class ContentReviewDefaultSettings extends DataExtension
                 ),
             ]
         );
+        $wysiwygConfig->setEditorConfig($this->getTinyMCEConfig($wysiwygConfig->getEditorConfig()));
+    }
+
+    /**
+     * Get the TinyMCEConfig that should be used for the email template preview
+     *
+     * @return TinyMCEConfig
+     */
+    private function getTinyMCEConfig(
+        TinyMCEConfig $config
+    ): TinyMCEConfig {
+        $editorButtonsGroupSeparator = '|';
+        $allowedEditorButtons = [
+            'undo',
+            'redo',
+            $editorButtonsGroupSeparator,
+            'bold',
+            'italic',
+            'underline',
+            $editorButtonsGroupSeparator,
+            'bullist',
+            'numlist',
+            $editorButtonsGroupSeparator,
+            'sslink',
+            $editorButtonsGroupSeparator,
+            'formatselect',
+            $editorButtonsGroupSeparator,
+            'code',
+        ];
+
+        $config->setButtonsForLine(1, $allowedEditorButtons);
+        $config->setButtonsForLine(2, []);
+        $config->setButtonsForLine(3, []);
+
+        return $config;
     }
 
     /**
