@@ -8,7 +8,8 @@ summary: Mark pages in the CMS with a date and an owner for future reviews.
 Global settings can be configured via the global settings admin in the CMS under the "Content Review" tab.
 This includes global groups, users, as well as a template editor that supports a limited number of variables.
 
-![SiteConfig settings](_images/content-review-siteconfig-settings.png)
+![SiteConfig settings](_images/content-review-siteconfig-settings-part-1.png)
+![SiteConfig settings](_images/content-review-siteconfig-settings-part-2.png)
 
 ## Schedules
 
