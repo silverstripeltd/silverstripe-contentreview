@@ -10,8 +10,8 @@ use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
 use SilverStripe\Forms\HTMLEditor\TinyMCEConfig;
 use SilverStripe\Forms\ListboxField;
 use SilverStripe\Forms\LiteralField;
-use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\TextAreaField;
+use SilverStripe\Forms\TextField;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
@@ -181,33 +181,32 @@ class ContentReviewDefaultSettings extends DataExtension
             [
                 TextField::create('ReviewFrom', _t(__CLASS__ . '.EMAILFROM', 'From email address'))
                     ->setDescription(_t(__CLASS__ . '.EMAILFROM_RIGHTTITLE', 'e.g: do-not-reply@site.com')),
-                $wysiwygConfig = HTMLEditorField::create(
-                    'ReviewBody',
-                    _t(__CLASS__ . '.EMAILTEMPLATE', 'Email template')
-                ),
                 TextField::create(
                     'ReviewSubject',
                     _t(__CLASS__ . '.OVERDUEEMAILSUBJECT', 'Overdue review subject line')
                 ),
-                TextAreaField::create(
+                $overdueReviewBody = HTMLEditorField::create(
                     'ReviewBody',
-                    _t(__CLASS__ . '.OVERDUEEMAILTEMPLATE', 'Overdue review email template')
+                    _t(__CLASS__ . '.OVERDUEEMAILTEMPLATE', 'Overdue email template')
                 ),
                 TextField::create(
                     'ReminderSubject',
                     _t(__CLASS__ . '.REMINDEREMAILSUBJECT', 'Reminder review subject line')
                 ),
-                $wysiwygConfig = HTMLEditorField::create(
-                     'ReminderBody',
-                     _t(__CLASS__ . '.REMINDEREMAILTEMPLATE', 'Reminder Email template')
-                 ),
+                $reminderReviewBody = HTMLEditorField::create(
+                    'ReminderBody',
+                    _t(__CLASS__ . '.REMINDEREMAILTEMPLATE', 'Reminder Email template')
+                ),
                 LiteralField::create(
                     'TemplateHelp',
                     $this->owner->renderWith('SilverStripe\\ContentReview\\ContentReviewAdminHelp')
                 ),
             ]
         );
-        $wysiwygConfig->setEditorConfig($this->getTinyMCEConfig($wysiwygConfig->getEditorConfig()));
+
+        // set up tinymce config for our body fields
+        $overdueReviewBody->setEditorConfig($this->getTinyMCEConfig($overdueReviewBody->getEditorConfig()));
+        $reminderReviewBody->setEditorConfig($this->getTinyMCEConfig($reminderReviewBody->getEditorConfig()));
     }
 
     /**

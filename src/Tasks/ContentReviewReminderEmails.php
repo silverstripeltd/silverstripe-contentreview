@@ -62,7 +62,7 @@ class ContentReviewReminderEmails extends BuildTask
             $upcomingForReviewDateInDays = $this->getUpcomingForReviewDateInDays($page->NextReviewDate);
             $reminderIntervals = array_values($reminderIntervals);
 
-            if ( in_array($upcomingForReviewDateInDays, $reminderIntervals)) {
+            if (in_array($upcomingForReviewDateInDays, $reminderIntervals)) {
                 $options = $page->getOptions();
 
                 if ($options) {
