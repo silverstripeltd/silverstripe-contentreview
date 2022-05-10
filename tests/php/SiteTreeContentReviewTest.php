@@ -180,7 +180,7 @@ class SiteTreeContentReviewTest extends ContentReviewBaseTest
         DBDatetime::clear_mock_now();
     }
 
-    public function testCanNotBeReviewedBecauseInFuture()
+    public function testCanBeReviewedInFuture()
     {
         DBDatetime::set_mock_now("2010-01-01 12:00:00");
 
@@ -190,7 +190,7 @@ class SiteTreeContentReviewTest extends ContentReviewBaseTest
         /** @var Page|SiteTreeContentReview $page */
         $page = $this->objFromFixture(Page::class, "staff");
 
-        $this->assertFalse($page->canBeReviewedBy($author));
+        $this->assertTrue($page->canBeReviewedBy($author));
 
         DBDatetime::clear_mock_now();
     }
