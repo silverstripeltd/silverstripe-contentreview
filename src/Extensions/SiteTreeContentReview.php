@@ -526,7 +526,7 @@ class SiteTreeContentReview extends DataExtension implements PermissionProvider
     }
 
     /**
-     * Check if a review is due by a member for this owner.
+     * A function to check whether the content review bell can be displayed
      *
      * @param Member $member
      *
@@ -565,6 +565,61 @@ class SiteTreeContentReview extends DataExtension implements PermissionProvider
         }
 
         // Check whether this user is allowed to review the content of the page.
+        if ($this->owner->hasMethod("canReviewContent") && !$this->owner->canReviewContent($member)) {
+            return false;
+        }
+
+        if ($member->inGroups($options->OwnerGroups())) {
+            return true;
+        }
+
+        if ($options->OwnerUsers()->find("ID", $member->ID)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if a review is overdue and an email can be sent
+     *
+     * @param Member $member
+     *
+     * @return bool
+     */
+    public function canSendEmail(Member $member = null)
+    {
+        if (!$this->owner->obj("NextReviewDate")->exists()) {
+            return false;
+        }
+
+        if ($this->owner->obj("NextReviewDate")->InFuture()) {
+            return false;
+        }
+
+        $options = $this->getOptions();
+
+        if (!$options) {
+            return false;
+        }
+
+        if (!$options
+            // Options can be a SiteConfig with different extension applied
+            || (!$options->hasExtension(__CLASS__)
+                && !$options->hasExtension(ContentReviewDefaultSettings::class))
+        ) {
+            return false;
+        }
+
+        if ($options->OwnerGroups()->count() == 0 && $options->OwnerUsers()->count() == 0) {
+            return false;
+        }
+
+        if (!$member) {
+            return true;
+        }
+
+        // Whether or not a user is allowed to review the content of the page.
         if ($this->owner->hasMethod("canReviewContent") && !$this->owner->canReviewContent($member)) {
             return false;
         }

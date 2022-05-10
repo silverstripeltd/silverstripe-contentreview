@@ -54,7 +54,7 @@ class ContentReviewEmails extends BuildTask
         $overduePages = [];
 
         foreach ($pages as $page) {
-            if (!$page->canBeReviewedBy()) {
+            if (!$page->canSendEmail()) {
                 continue;
             }
 
