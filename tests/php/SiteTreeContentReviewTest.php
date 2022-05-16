@@ -195,6 +195,21 @@ class SiteTreeContentReviewTest extends ContentReviewBaseTest
         DBDatetime::clear_mock_now();
     }
 
+    public function testCanNotSendReviewEmail()
+    {
+        DBDatetime::set_mock_now("2010-01-01 12:00:00");
+
+        /** @var Member $author */
+        $author = $this->objFromFixture(Member::class, "author");
+
+        /** @var Page|SiteTreeContentReview $page */
+        $page = $this->objFromFixture(Page::class, "staff");
+
+        $this->assertFalse($page->canSendEmail($author));
+
+        DBDatetime::clear_mock_now();
+    }
+
     public function testCanNotBeReviewedByUser()
     {
         DBDatetime::set_mock_now("2010-03-01 12:00:00");
