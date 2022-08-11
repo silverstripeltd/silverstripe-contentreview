@@ -106,11 +106,33 @@ class SiteTreeContentReview extends DataExtension implements PermissionProvider
     ];
 
     /**
+     * Array of interval timings used to remind content authors to do
+     * a review of their content before the overdue review date.
+     *
+     * @config
+     *
+     * @var string[]
+     */
+    private static $reminder_intervals = [
+        7 => '7 days',
+        30 => '30 days',
+        60 => '60 days',
+    ];
+
+    /**
      * @return array
      */
     public static function get_schedule()
     {
         return Config::inst()->get(static::class, 'schedule');
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function get_reminder_intervals()
+    {
+        return Config::inst()->get(static::class, 'reminder_intervals');
     }
 
     /**
@@ -340,7 +362,7 @@ class SiteTreeContentReview extends DataExtension implements PermissionProvider
             );
             $nextReviewAt = DateField::create(
                 'RONextReviewDate',
-                _t(__CLASS__ . ".NEXTREVIEWDATE", "Next review date"),
+                _t(__CLASS__ . ".NEXTREVIEWDATE", "Overdue review date"),
                 $this->owner->NextReviewDate
             );
 
@@ -420,7 +442,7 @@ class SiteTreeContentReview extends DataExtension implements PermissionProvider
             ->setAttribute("data-placeholder", _t(__CLASS__ . ".ADDGROUP", "Add groups"))
             ->setDescription(_t(__CLASS__ . ".OWNERGROUPSDESCRIPTION", "Page owners that are responsible for reviews"));
 
-        $reviewDate = DateField::create("NextReviewDate", _t(__CLASS__ . ".NEXTREVIEWDATE", "Next review date"))
+        $reviewDate = DateField::create("NextReviewDate", _t(__CLASS__ . ".NEXTREVIEWDATE", "Overdue review date"))
             ->setDescription(_t(__CLASS__ . ".NEXTREVIEWDATADESCRIPTION", "Leave blank for no review"));
 
         $reviewFrequency = DropdownField::create(
@@ -504,7 +526,7 @@ class SiteTreeContentReview extends DataExtension implements PermissionProvider
     }
 
     /**
-     * Check if a review is due by a member for this owner.
+     * A function to check whether the content review bell can be displayed
      *
      * @param Member $member
      *
@@ -559,6 +581,24 @@ class SiteTreeContentReview extends DataExtension implements PermissionProvider
     }
 
     /**
+     * Check if a review is overdue and an email can be sent
+     *
+     * @param Member $member
+     *
+     * @return bool
+     */
+    public function canSendEmail(Member $member = null)
+    {
+        $canSendEmail = $this->canBeReviewedBy($member);
+
+        if ($this->owner->obj("NextReviewDate")->InFuture()) {
+            $canSendEmail = false;
+        }
+
+        return $canSendEmail;
+    }
+
+    /**
      * Set the review data from the review period, if set.
      */
     public function onBeforeWrite()
@@ -581,7 +621,7 @@ class SiteTreeContentReview extends DataExtension implements PermissionProvider
             }
         }
 
-        // Ensure that a inherited page always have a next review date
+        // Ensure that an inherited page always has an overdue review date
         if ($this->owner->ContentReviewType == "Inherit" && !$this->owner->NextReviewDate) {
             $this->setDefaultReviewDateForInherited();
         }

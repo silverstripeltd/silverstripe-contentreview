@@ -6,9 +6,11 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Control\Email\Email;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
+use SilverStripe\Forms\HTMLEditor\TinyMCEConfig;
 use SilverStripe\Forms\ListboxField;
 use SilverStripe\Forms\LiteralField;
-use SilverStripe\Forms\TextareaField;
+use SilverStripe\Forms\TextAreaField;
 use SilverStripe\Forms\TextField;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\Security\Group;
@@ -33,6 +35,8 @@ class ContentReviewDefaultSettings extends DataExtension
         'ReviewFrom' => 'Varchar(255)',
         'ReviewSubject' => 'Varchar(255)',
         'ReviewBody' => 'HTMLText',
+        'ReminderSubject' => 'Varchar(255)',
+        'ReminderBody' => 'HTMLText',
     );
 
     /**
@@ -44,6 +48,9 @@ class ContentReviewDefaultSettings extends DataExtension
         'ReviewSubject' => 'Page(s) are due for content review',
         'ReviewBody' => '<h2>Page(s) due for review</h2>'
             . '<p>There are $PagesCount pages that are due for review today by you.</p>',
+        'ReminderSubject' => 'Reminder: Page(s) are upcoming for content review',
+        'ReminderBody' => '<h2>Reminder: Your Page(s) are approaching overdue for review</h2>'
+            . '<p>There are $PagesCount pages that have reviews upcoming for you.</p>',
     );
 
     /**
@@ -66,6 +73,17 @@ class ContentReviewDefaultSettings extends DataExtension
      * @var string
      */
     private static $content_review_template = 'SilverStripe\\ContentReview\\ContentReviewEmail';
+
+    /**
+     * Template to use for Reminder content review emails.
+     *
+     * This should contain an $EmailBody variable as a placeholder for the user-defined copy
+     *
+     * @config
+     *
+     * @var string
+     */
+    private static $content_review_reminder_template = 'SilverStripe\\ContentReview\\ContentReviewReminderEmail';
 
     /**
      * @return string
@@ -163,14 +181,66 @@ class ContentReviewDefaultSettings extends DataExtension
             [
                 TextField::create('ReviewFrom', _t(__CLASS__ . '.EMAILFROM', 'From email address'))
                     ->setDescription(_t(__CLASS__ . '.EMAILFROM_RIGHTTITLE', 'e.g: do-not-reply@site.com')),
-                TextField::create('ReviewSubject', _t(__CLASS__ . '.EMAILSUBJECT', 'Subject line')),
-                TextAreaField::create('ReviewBody', _t(__CLASS__ . '.EMAILTEMPLATE', 'Email template')),
+                TextField::create(
+                    'ReviewSubject',
+                    _t(__CLASS__ . '.OVERDUEEMAILSUBJECT', 'Overdue review subject line')
+                ),
+                $overdueReviewBody = HTMLEditorField::create(
+                    'ReviewBody',
+                    _t(__CLASS__ . '.OVERDUEEMAILTEMPLATE', 'Overdue email template')
+                ),
+                TextField::create(
+                    'ReminderSubject',
+                    _t(__CLASS__ . '.REMINDEREMAILSUBJECT', 'Reminder review subject line')
+                ),
+                $reminderReviewBody = HTMLEditorField::create(
+                    'ReminderBody',
+                    _t(__CLASS__ . '.REMINDEREMAILTEMPLATE', 'Reminder Email template')
+                ),
                 LiteralField::create(
                     'TemplateHelp',
                     $this->owner->renderWith('SilverStripe\\ContentReview\\ContentReviewAdminHelp')
                 ),
             ]
         );
+
+        // set up tinymce config for our body fields
+        $overdueReviewBody->setEditorConfig($this->getTinyMCEConfig($overdueReviewBody->getEditorConfig()));
+        $reminderReviewBody->setEditorConfig($this->getTinyMCEConfig($reminderReviewBody->getEditorConfig()));
+    }
+
+    /**
+     * Get the TinyMCEConfig that should be used for the email template preview
+     *
+     * @return TinyMCEConfig
+     */
+    private function getTinyMCEConfig(
+        TinyMCEConfig $config
+    ): TinyMCEConfig {
+        $editorButtonsGroupSeparator = '|';
+        $allowedEditorButtons = [
+            'undo',
+            'redo',
+            $editorButtonsGroupSeparator,
+            'bold',
+            'italic',
+            'underline',
+            $editorButtonsGroupSeparator,
+            'bullist',
+            'numlist',
+            $editorButtonsGroupSeparator,
+            'sslink',
+            $editorButtonsGroupSeparator,
+            'formatselect',
+            $editorButtonsGroupSeparator,
+            'code',
+        ];
+
+        $config->setButtonsForLine(1, $allowedEditorButtons);
+        $config->setButtonsForLine(2, []);
+        $config->setButtonsForLine(3, []);
+
+        return $config;
     }
 
     /**

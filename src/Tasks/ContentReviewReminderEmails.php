@@ -3,11 +3,14 @@
 namespace SilverStripe\ContentReview\Tasks;
 
 use Page;
+use Psr\Log\LoggerInterface;
 use SilverStripe\ContentReview\Compatibility\ContentReviewCompatability;
+use SilverStripe\ContentReview\Extensions\SiteTreeContentReview;
 use SilverStripe\Control\Email\Email;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\FieldType\DBDate;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\SS_List;
@@ -15,12 +18,12 @@ use SilverStripe\Security\Member;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\View\ArrayData;
 use SilverStripe\View\SSViewer;
-use SilverStripe\ContentReview\Models\ContentReviewLog;
 
 /**
- * Daily task to send emails to the owners of content items when the review date rolls around.
+ * Daily task that compares the Next review date of content pages and sends an email to the owners to remind them
+ * that the content is nearing overdue for their review.
  */
-class ContentReviewEmails extends BuildTask
+class ContentReviewReminderEmails extends BuildTask
 {
     /**
      * @param HTTPRequest $request
@@ -31,13 +34,13 @@ class ContentReviewEmails extends BuildTask
 
         // First grab all the pages with a custom setting
         $pages = Page::get()
-            ->filter('NextReviewDate:LessThanOrEqual', DBDatetime::now()->URLDate());
+            ->filter('NextReviewDate:GreaterThan', DBDatetime::now()->URLDate());
 
-        $overduePages = $this->getOverduePagesForOwners($pages);
+        $upcomingPagesForReview = $this->getOverduePagesForOwners($pages);
 
         // Lets send one email to one owner with all the pages in there instead of no of pages
         // of emails.
-        foreach ($overduePages as $memberID => $pages) {
+        foreach ($upcomingPagesForReview as $memberID => $pages) {
             $this->notifyOwner($memberID, $pages);
         }
 
@@ -52,31 +55,26 @@ class ContentReviewEmails extends BuildTask
     protected function getOverduePagesForOwners(SS_List $pages)
     {
         $overduePages = [];
+        $reminderIntervals = SiteTreeContentReview::get_reminder_intervals();
 
         foreach ($pages as $page) {
-            if (!$page->canSendEmail()) {
-                continue;
-            }
+            // get the owner NextReviewDate in 'days', so we can compare to our intervals
+            $upcomingForReviewDateInDays = $this->getUpcomingForReviewDateInDays($page->NextReviewDate);
+            $reminderIntervals = array_values($reminderIntervals);
 
-            // get most recent review log of current [age]
-            $contentReviewLog = $page->ReviewLogs()->sort('Created DESC')->first();
+            if (in_array($upcomingForReviewDateInDays, $reminderIntervals)) {
+                $options = $page->getOptions();
 
-            // check log date vs NextReviewDate. If someone has left a content review
-            // after the review date, then we don't need to notify anybody
-            if ($contentReviewLog && $contentReviewLog->Created >= $page->NextReviewDate) {
-                $page->advanceReviewDate();
-                continue;
-            }
+                if ($options) {
+                    foreach ($options->ContentReviewOwners() as $owner) {
+                        if (!isset($overduePages[$owner->ID])) {
+                            $overduePages[$owner->ID] = ArrayList::create();
+                        }
 
-            $options = $page->getOptions();
-
-            if ($options) {
-                foreach ($options->ContentReviewOwners() as $owner) {
-                    if (!isset($overduePages[$owner->ID])) {
-                        $overduePages[$owner->ID] = ArrayList::create();
+                        // add our overdue NextReviewDate in days form
+                        $page->UpcomingReviewdateInDays = $upcomingForReviewDateInDays;
+                        $overduePages[$owner->ID]->push($page);
                     }
-
-                    $overduePages[$owner->ID]->push($page);
                 }
             }
         }
@@ -95,17 +93,17 @@ class ContentReviewEmails extends BuildTask
         $owner = Member::get()->byID($ownerID);
         $templateVariables = $this->getTemplateVariables($owner, $siteConfig, $pages);
 
-        // Build email
+        // Build over due email
         $email = Email::create();
         $email->setTo($owner->Email);
         $email->setFrom($siteConfig->ReviewFrom);
-        $email->setSubject($siteConfig->ReviewSubject);
+        $email->setSubject($siteConfig->ReminderSubject);
 
         // Get user-editable body
         $body = $this->getEmailBody($siteConfig, $templateVariables);
 
         // Populate mail body with fixed template
-        $email->setHTMLTemplate($siteConfig->config()->get('content_review_template'));
+        $email->setHTMLTemplate($siteConfig->config()->get('content_review_reminder_template'));
         $email->setData(
             array_merge(
                 $templateVariables,
@@ -129,7 +127,7 @@ class ContentReviewEmails extends BuildTask
      */
     protected function getEmailBody($config, $variables)
     {
-        $template = SSViewer::fromString($config->ReviewBody);
+        $template = SSViewer::fromString($config->ReminderBody);
         $value = $template->process(ArrayData::create($variables));
 
         // Cast to HTML
@@ -151,12 +149,28 @@ class ContentReviewEmails extends BuildTask
     protected function getTemplateVariables($recipient, $config, $pages)
     {
         return [
-            'Subject' => $config->ReviewSubject,
+            'ReminderSubject' => $config->Remindersubject,
             'PagesCount' => $pages->count(),
             'FromEmail' => $config->ReviewFrom,
             'ToFirstName' => $recipient->FirstName,
             'ToSurname' => $recipient->Surname,
             'ToEmail' => $recipient->Email,
         ];
+    }
+
+    /**
+     * Helper method that compares a page owner `NextReviewDate` to {@see DBDatetime::now()}
+     * and returns a formatted in 'days' value.
+     * This return is used to validate to the configurable reminder interval values.
+     *
+     * {@see SiteTreeContentReview::$reminder_intervals}
+     *
+     * @param string $pageOwnerNextReviewDate
+     * @return string
+     */
+    protected function getUpcomingForReviewDateInDays(string $pageOwnerNextReviewDate): string
+    {
+        $nextReviewDateInDays = DBDate::create()->setValue($pageOwnerNextReviewDate);
+        return $nextReviewDateInDays->TimeDiffIn('days');
     }
 }
